@@ -1,36 +1,140 @@
-// Enemies our player must avoid
-var Enemy = function() {
-    // Variables applied to each of our instances go here,
-    // we've provided one for you to get started
+// Ground Matrix
+var matrix = [
+    [2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2],
+    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+    [2, 0, 2, 0, 2, 0, 2, 0, 2, 0, 2],
+    [1, 0, 0, 0, 0, 2, 0, 0, 0, 0, 1],
+    [2, 0, 2, 0, 2, 0, 2, 0, 2, 0, 2],
+    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+    [2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2]
+];
+// Above Matrix
+var matrix_obs = [
+    [9, -1, 9, -1, 9, -1, 9, -1, 9, -1, 9],
+    [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+    [9, -1, 9, -1, 9, -1, 9, -1, 9, -1, 9],
+    [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+    [9, -1, 9, -1, 9, -1, 9, -1, 9, -1, 9],
+    [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+    [9, -1, 9, -1, 9, -1, 9, -1, 9, -1, 9]
 
-    // The image/sprite for our enemies, this uses
-    // a helper we've provided to easily load images
-    this.sprite = 'images/enemy-bug.png';
+];
+// Player
+var player = new Player();
+player.position_x = 5;
+player.position_y = 3;
+
+// Text Object Define
+var score = new textObject();
+var highScore = new textObject();
+var currentHighScore = 0;
+var currentScore = 0;
+score.update = function() {
+    var s = document.getElementById("Score");
+    currentScore++;
+    s.innerText = currentScore;
 };
 
-// Update the enemy's position, required method for game
-// Parameter: dt, a time delta between ticks
-Enemy.prototype.update = function(dt) {
-    // You should multiply any movement by the dt parameter
-    // which will ensure the game runs at the same speed for
-    // all computers.
+highScore.update = function() {
+    var hs = document.getElementById("Highscore");
+    if (currentScore >= currentHighScore) {
+        currentHighScore = currentScore;
+        hs.innerText = currentHighScore;
+    }
 };
+// End
 
-// Draw the enemy on the screen, required method for game
-Enemy.prototype.render = function() {
-    ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
+// Enemies
+allEnemies = [];
+setTimeout(CreateEnemies, 2000);
+
+function CreateEnemies() {
+    var randomNumberDirection = Math.floor(Math.random() * 100 + 1);
+    var new_enemy;
+    if (randomNumberDirection % 4 == 0) {
+        new_enemy = new Enemy(8); // Right
+        new_enemy.position_x = 0;
+        var randomPosition = Math.floor(Math.random() * 3);
+        if (randomPosition % 3 == 0) {
+            new_enemy.position_y = 1;
+        } else if (randomPosition % 3 == 1) {
+            new_enemy.position_y = 3;
+        } else {
+            new_enemy.position_y = 5;
+        }
+    } else if (randomNumberDirection % 4 == 1) {
+        new_enemy = new Enemy(17); // Left
+        new_enemy.position_x = 10;
+        var randomPosition = Math.floor(Math.random() * 3);
+        if (randomPosition % 3 == 0) {
+            new_enemy.position_y = 1;
+        } else if (randomPosition % 3 == 1) {
+            new_enemy.position_y = 3;
+        } else {
+            new_enemy.position_y = 5;
+        }
+    } else if (randomNumberDirection % 4 == 2) {
+        new_enemy = new Enemy(18); // Up;
+        new_enemy.position_y = 6;
+        var randomPosition = Math.floor(Math.random() * 5);
+        if (randomPosition % 5 == 0) {
+            new_enemy.position_x = 1;
+        } else if (randomPosition % 5 == 1) {
+            new_enemy.position_x = 3;
+        } else if (randomPosition % 5 == 2) {
+            new_enemy.position_x = 5;
+        } else if (randomPosition % 5 == 3) {
+            new_enemy.position_x = 7;
+        } else {
+            new_enemy.position_x = 9;
+        }
+    } else if (randomNumberDirection % 4 == 3) {
+        new_enemy = new Enemy(19); // Down
+        new_enemy.position_y = 0;
+        var randomPosition = Math.floor(Math.random() * 5);
+        if (randomPosition % 5 == 0) {
+            new_enemy.position_x = 1;
+        } else if (randomPosition % 5 == 1) {
+            new_enemy.position_x = 3;
+        } else if (randomPosition % 5 == 2) {
+            new_enemy.position_x = 5;
+        } else if (randomPosition % 5 == 3) {
+            new_enemy.position_x = 7;
+        } else {
+            new_enemy.position_x = 9;
+        }
+    }
+    allEnemies.push(new_enemy);
+    setTimeout(CreateEnemies, 2000);
 };
+// End
 
-// Now write your own player class
-// This class requires an update(), render() and
-// a handleInput() method.
+// PickUp
+allPickUps = [];
+setTimeout(CreatePickups, 2500);
 
+function CreatePickups() {
+    var randomPickup = Math.floor(Math.random() * 100) + 1;
+    var pick;
+    if (randomPickup % 100 == 0)
+        pick = new pickUp(13);
+    else if (randomPickup % 100 < 15)
+        pick = new pickUp(12);
+    else if (randomPickup % 100 < 50)
+        pick = new pickUp(11)
+    else
+        pick = new pickUp(10);
 
-// Now instantiate your objects.
-// Place all enemy objects in an array called allEnemies
-// Place the player object in a variable called player
+    var random_pickUp_position = Math.floor(Math.random() * 77) + 1;
+    pick.position_x = (random_pickUp_position % 11) % 2 == 0 ? random_pickUp_position % 11 + 1 : random_pickUp_position % 11;
+    pick.position_y = (random_pickUp_position % 7) % 2 == 0 ? random_pickUp_position % 7 + 1 : random_pickUp_position % 7;
 
-
+    if (pick.position_x >= 0 && pick.position_y >= 0 &&
+        pick.position_y <= 6 && pick.position_x <= 10)
+        allPickUps.push(pick);
+    setTimeout(CreatePickups, 2500);
+}
+// PickUp
 
 // This listens for key presses and sends the keys to your
 // Player.handleInput() method. You don't need to modify this.

@@ -25,8 +25,11 @@ var Engine = (function(global) {
         ctx = canvas.getContext('2d'),
         lastTime;
 
-    canvas.width = 505;
-    canvas.height = 606;
+    var gameWorld = [];
+    var obs = [];
+
+    canvas.width = 1111;
+    canvas.height = 701;
     doc.body.appendChild(canvas);
 
     /* This function serves as the kickoff point for the game loop itself
@@ -69,98 +72,145 @@ var Engine = (function(global) {
         main();
     }
 
-    /* This function is called by main (our game loop) and itself calls all
-     * of the functions which may need to update entity's data. Based on how
-     * you implement your collision detection (when two entities occupy the
-     * same space, for instance when your character should die), you may find
-     * the need to add an additional function call here. For now, we've left
-     * it commented out - you may or may not want to implement this
-     * functionality this way (you could just implement collision detection
-     * on the entities themselves within your app.js file).
+    /* Updating Entities and collison detection is done here
      */
     function update(dt) {
         updateEntities(dt);
-        // checkCollisions();
+        checkCollisions();
     }
 
-    /* This is called by the update function and loops through all of the
-     * objects within your allEnemies array as defined in app.js and calls
-     * their update() methods. It will then call the update function for your
-     * player object. These update methods should focus purely on updating
-     * the data/properties related to the object. Do your drawing in your
-     * render methods.
-     */
+    /*
+    Each moving objects and some stationary objects are updating
+    */
     function updateEntities(dt) {
-        allEnemies.forEach(function(enemy) {
-            enemy.update(dt);
-        });
+        // Player Update
         player.update();
+
+        // Score Updates
+        score.update();
+        highScore.update();
+
+        // All enemies
+        allEnemies.forEach(function(enemy) {
+            enemy.update();
+        });
+
+        allPickUps.forEach(function(pickUp) {
+            pickUp.update(dt);
+        });
     }
 
-    /* This function initially draws the "game level", it will then call
-     * the renderEntities function. Remember, this function is called every
-     * game tick (or loop of the game engine) because that's how games work -
-     * they are flipbooks creating the illusion of animation but in reality
-     * they are just drawing the entire screen over and over.
+    /* Render function renders the static objects like the ground, pickUps and the stationary objects
+    After the render of the object mention above is complete moving entities will be rendered.
      */
     function render() {
-        /* This array holds the relative URL to the image used
-         * for that particular row of the game level.
-         */
-        var rowImages = [
-                'images/water-block.png',   // Top row is water
-                'images/stone-block.png',   // Row 1 of 3 of stone
-                'images/stone-block.png',   // Row 2 of 3 of stone
-                'images/stone-block.png',   // Row 3 of 3 of stone
-                'images/grass-block.png',   // Row 1 of 2 of grass
-                'images/grass-block.png'    // Row 2 of 2 of grass
-            ],
-            numRows = 6,
-            numCols = 5,
+        // Number of Columns and Rows that will be in the game.
+        var numRows = 7,
+            numCols = 11,
             row, col;
 
-        /* Loop through the number of rows and columns we've defined above
-         * and, using the rowImages array, draw the correct image for that
-         * portion of the "grid"
-         */
+        gameWorld = [];
         for (row = 0; row < numRows; row++) {
+            gameWorld.push([]);
             for (col = 0; col < numCols; col++) {
-                /* The drawImage function of the canvas' context element
-                 * requires 3 parameters: the image to draw, the x coordinate
-                 * to start drawing and the y coordinate to start drawing.
-                 * We're using our Resources helpers to refer to our images
-                 * so that we get the benefits of caching these images, since
-                 * we're using them over and over.
-                 */
-                ctx.drawImage(Resources.get(rowImages[row]), col * 101, row * 83);
+                var gameObject = new GameObject(matrix[row][col]);
+                gameObject.baseDraw(col, row);
+                gameWorld[row].push(gameObject);
             }
+
         }
+        obs = [];
+        for (row = 0; row < numRows; row++) {
+            obs.push([]);
+            for (col = 0; col < numCols; col++) {
+                var gameObject = new GameObject(matrix_obs[row][col]);
+                gameObject.onTopDraw(col, row);
+                obs[row].push(gameObject);
+            }
+
+        }
+
+
 
         renderEntities();
     }
 
-    /* This function is called by the render function and is called on each game
-     * tick. Its purpose is to then call the render functions you have defined
-     * on your enemy and player entities within app.js
-     */
+    /*
+    Render the moving objects and some stationary objects
+    */
     function renderEntities() {
-        /* Loop through all of the objects within the allEnemies array and call
-         * the render function you have defined.
-         */
+        //Rendering the enemies
         allEnemies.forEach(function(enemy) {
-            enemy.render();
+            if (enemy.position_x > 0 && enemy.position_y > 0 &&
+                enemy.position_y < 10.1 && enemy.position_x < 10.1)
+                enemy.onTopDraw();
+        });
+        //Rendering the pickups
+        allPickUps.forEach(function(pickUp) {
+            if (pickUp.type != -1)
+                pickUp.onTopDraw();
+        });
+        //Rendering the player
+        player.onTopDraw(player.position_x, player.position_y);
+    }
+
+    /* Resets the game to initial point, but saving the highscore
+    */
+    function reset() {
+        //Clear all canvas
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        //Place player on the middle
+        player.onTopDraw(5, 3);
+        // Clear all enemies
+        allEnemies = [];
+        // Score
+        currentScore = 0;
+        // Reset Pickups
+        allPickUps = [];
+
+    }
+
+    // Collisions are checked depending on the type, certain things happen for more information please refer to ReadMe.md
+    function checkCollisions() {
+
+        // Checking the player is on the edge of the canvas
+        if (player.position_y == 0 || player.position_x == 0 || player.position_x == 10 || player.position_y == 6) {
+            reset();
+        }
+        // Player cannot climb to the rocks
+        if (player.position_x % 2 == 0 && player.position_y % 2 == 0) {
+            player.position_x = player.old_position_x;
+            player.position_y = player.old_position_y;
+        }
+
+        allEnemies.forEach(function(enemy) {
+            if (enemy.position_x > 0 && enemy.position_y > 0 &&
+                enemy.position_y < 10.1 && enemy.position_x < 10.1)
+                if (Math.abs(player.position_x.toFixed(1) - enemy.position_x.toFixed(1)) < 0.7 &&
+                    Math.abs(player.position_y.toFixed(1) - enemy.position_y.toFixed(1)) < 0.7) {
+                    reset();
+                    return;
+                }
         });
 
-        player.render();
-    }
+        allPickUps.forEach(function(pickUp) {
+            if (pickUp.type > -1)
+                if (player.position_y == pickUp.position_y &&
+                    player.position_x == pickUp.position_x) {
+                    if (pickUp.type == 13) {
+                        currentScore += 100000;
+                    } else if (pickUp.type == 12) {
+                        currentScore += 10000;
+                    } else if (pickUp.type == 11) {
+                        currentScore += 1000;
+                    } else {
+                        currentScore += 100;
+                    }
+                    pickUp.type = -1;
+                }
+        });
 
-    /* This function does nothing but it could have been a good place to
-     * handle game reset states - maybe a new game menu or a game over screen
-     * those sorts of things. It's only called once by the init() method.
-     */
-    function reset() {
-        // noop
-    }
+    };
 
     /* Go ahead and load all of the images we know we're going to need to
      * draw our game level. Then set init as the callback method, so that when
@@ -170,8 +220,23 @@ var Engine = (function(global) {
         'images/stone-block.png',
         'images/water-block.png',
         'images/grass-block.png',
-        'images/enemy-bug.png',
-        'images/char-boy.png'
+        'images/char-boy.png',
+        'images/char-cat-girl.png',
+        'images/char-horn-girl.png',
+        'images/char-pink-girl.png',
+        'images/char-princess-girl.png',
+        'images/enemy-bug-R.png',
+        'images/enemy-bug-U.png',
+        'images/enemy-bug-D.png',
+        'images/enemy-bug-L.png',
+        'images/Rock.png',
+        'images/Heart.png',
+        'images/Gem Blue.png',
+        'images/Gem Green.png',
+        'images/Gem Orange.png',
+        'images/Selector.png',
+        'images/Star.png',
+        'images/Key.png'
     ]);
     Resources.onReady(init);
 
