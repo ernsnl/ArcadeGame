@@ -22,3 +22,8 @@ Player can increase its high score by collecting pick-ups. These are
 * Blue gems worth 1000 points.
 * Green gems worth 10000 points.
 * Orange Gems are worth 100000 points.
+
+## How to Run It
+
+To play the game download the github directory and open the main folder. In that main folder, click the index.html file and Survive! :)
+Have fun!

@@ -1,3 +1,5 @@
+'use strict';
+
 // Ground Matrix
 var matrix = [
     [2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2],
@@ -45,7 +47,7 @@ highScore.update = function() {
 // End
 
 // Enemies
-allEnemies = [];
+var allEnemies = [];
 setTimeout(CreateEnemies, 2000);
 
 function CreateEnemies() {
@@ -110,20 +112,20 @@ function CreateEnemies() {
 // End
 
 // PickUp
-allPickUps = [];
+var allPickUps = [];
 setTimeout(CreatePickups, 2500);
 
 function CreatePickups() {
     var randomPickup = Math.floor(Math.random() * 100) + 1;
     var pick;
     if (randomPickup % 100 == 0)
-        pick = new pickUp(13);
+        pick = new PickUp(13);
     else if (randomPickup % 100 < 15)
-        pick = new pickUp(12);
+        pick = new PickUp(12);
     else if (randomPickup % 100 < 50)
-        pick = new pickUp(11)
+        pick = new PickUp(11)
     else
-        pick = new pickUp(10);
+        pick = new PickUp(10);
 
     var random_pickUp_position = Math.floor(Math.random() * 77) + 1;
     pick.position_x = (random_pickUp_position % 11) % 2 == 0 ? random_pickUp_position % 11 + 1 : random_pickUp_position % 11;

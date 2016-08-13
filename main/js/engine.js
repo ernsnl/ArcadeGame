@@ -29,7 +29,7 @@ var Engine = (function(global) {
     var obs = [];
 
     canvas.width = 1111;
-    canvas.height = 701;
+    canvas.height = 650;
     doc.body.appendChild(canvas);
 
     /* This function serves as the kickoff point for the game loop itself
@@ -129,10 +129,8 @@ var Engine = (function(global) {
             }
 
         }
-
-
-
         renderEntities();
+        ctx.clearRect(0, 0, canvas.width, 50);
     }
 
     /*
@@ -155,7 +153,7 @@ var Engine = (function(global) {
     }
 
     /* Resets the game to initial point, but saving the highscore
-    */
+     */
     function reset() {
         //Clear all canvas
         ctx.clearRect(0, 0, canvas.width, canvas.height);

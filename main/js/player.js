@@ -12,17 +12,13 @@ Player.prototype.constructor = Player;
 Player.prototype.handleInput = function(keycode) {
     this.old_position_x = this.position_x;
     this.old_position_y = this.position_y;
-    if (keycode == 'left') // Left
-    {
+    if (keycode == 'left'){ // Left
         this.position_x--;
-    } else if (keycode == 'up') // Up
-    {
+    } else if (keycode == 'up'){  // Up
         this.position_y--;
-    } else if (keycode == 'right') // Right
-    {
+    } else if (keycode == 'right'){ // Right
         this.position_x++;
-    } else if (keycode == 'down') // Down
-    {
+    } else if (keycode == 'down'){ // Down
         this.position_y++;
     }
 
